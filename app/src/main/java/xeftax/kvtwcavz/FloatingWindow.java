@@ -36,7 +36,6 @@ public class FloatingWindow extends Service {
     int xbind = 0;
 
 
-
     WindowManager wm;
     FrameLayout ll;
     FrameLayout llt;
