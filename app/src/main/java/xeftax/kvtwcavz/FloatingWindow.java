@@ -24,21 +24,21 @@ import java.lang.System;
 
 public class FloatingWindow extends Service {
 
-    int x0 = 450;
-    int y0 = -530;
-    int ylimit= -760;
-    int xdelete = 0;
-    int ydelete = 610;
+    int xbord = 450;
+    int ybord = 762;
     long time1 = 0;
     long time2 = 0;
     long Timer = 0;
-    int ybind = 870;
-    int xbind = 0;
+    int ycroixinit = 870;
+    int ycroixfinal = 610;
+    int xcroixinit = 0;
+    boolean finanim = false;
+
 
 
     WindowManager wm;
-    FrameLayout ll;
-    FrameLayout llt;
+    FrameLayout Bulle;
+    FrameLayout Croix;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -54,48 +54,62 @@ public class FloatingWindow extends Service {
 
         wm = (WindowManager) getSystemService(WINDOW_SERVICE);
 
-        ll = new FrameLayout(this);
+
+        Bulle = new FrameLayout(this);
         LinearLayout.LayoutParams layoutParameters = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
-        ll.setBackground(getResources().getDrawable(R.drawable.icone));
-        ll.setLayoutParams(layoutParameters);
+        Bulle.setBackground(getResources().getDrawable(R.drawable.icone));
+        Bulle.setLayoutParams(layoutParameters);
 
-        final LayoutParams parametersll = new LayoutParams(
+
+        final LayoutParams paramsBubble = new LayoutParams(
                 180, 180, LayoutParams.TYPE_PHONE,
                 LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.TRANSPARENT);
-        parametersll.gravity = Gravity.CENTER | Gravity.CENTER;
+        paramsBubble.gravity = Gravity.CENTER | Gravity.CENTER;
 
-        parametersll.x = 450;
-        parametersll.y = -530;
 
-        wm.addView(ll, parametersll);
+        paramsBubble.x = 450;
+        paramsBubble.y = -530;
 
-        llt = new FrameLayout(this);
+        wm.addView(Bulle, paramsBubble);
+
+
+
+        Croix = new FrameLayout(this);
         layoutParameters = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
-        llt.setBackground(getResources().getDrawable(R.drawable.croix));
-        llt.setLayoutParams(layoutParameters);
+        Croix.setBackground(getResources().getDrawable(R.drawable.croix));
+        Croix.setLayoutParams(layoutParameters);
 
-        final LayoutParams parametersllt = new LayoutParams(
+
+        final LayoutParams paramsCroix = new LayoutParams(
                 150, 150, LayoutParams.TYPE_PHONE,
                 LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.TRANSPARENT);
-        parametersllt.gravity = Gravity.CENTER | Gravity.CENTER;
-
-        parametersllt.x = 0;
-        parametersllt.y = 610;
-        llt.setVisibility(View.INVISIBLE);
-
-        wm.addView(llt, parametersllt);
+        paramsCroix.gravity = Gravity.CENTER | Gravity.CENTER;
 
 
-        ll.setOnTouchListener(new View.OnTouchListener() {
-            LayoutParams updatedParameters = parametersll;
-            double x;
-            double y;
+        paramsCroix.x = xcroixinit;
+        paramsCroix.y = ycroixinit;
+
+        Croix.setVisibility(View.INVISIBLE);
+
+        wm.addView(Croix, paramsCroix);
+
+
+
+        Bulle.setOnTouchListener(new View.OnTouchListener() {
+
+            LayoutParams modifparamsBulle = paramsBubble;
+            LayoutParams modifparamsCroix = paramsCroix;
+
+
+            double Xdepart;
+            double Ydepart;
             double pressedX;
             double pressedY;
+
 
 
             @TargetApi(Build.VERSION_CODES.KITKAT)
@@ -108,48 +122,62 @@ public class FloatingWindow extends Service {
 
                         time1 = System.currentTimeMillis();
 
-                        updatedParameters.height = 170;
-                        updatedParameters.width = 170;
 
-                        x = updatedParameters.x;
-                        y = updatedParameters.y;
 
-                        parametersllt.x = 0;
-                        parametersllt.y = 610;
+                        modifparamsBulle.height = 170;
+
+                        Xdepart = modifparamsBulle.x;
+                        Ydepart = modifparamsBulle.y;
 
                         pressedX = event.getRawX();
                         pressedY = event.getRawY();
 
-                        wm.updateViewLayout(ll, updatedParameters);
+                        homotecie(modifparamsBulle.height, 0, Bulle);
 
-                        llt.setVisibility(View.VISIBLE);
-                        animate(xbind, parametersllt.x, ybind, parametersllt.y, 400, llt, false);
+
+
+                        Croix.setVisibility(View.VISIBLE);
+
+                        translation(xcroixinit, ycroixfinal, 400, Croix, false);
 
                         break;
 
                     case MotionEvent.ACTION_MOVE:
 
-                        parametersllt.height = 150;
-                        parametersllt.width = 150;
+                        modifparamsBulle.x = (int) (Xdepart + (event.getRawX() - pressedX));
+                        modifparamsBulle.y = (int) (Ydepart + (event.getRawY() - pressedY));
 
-                        updatedParameters.x = (int) (x + (event.getRawX() - pressedX));
-                        updatedParameters.y = (int) (y + (event.getRawY() - pressedY));
+                        if (modifparamsBulle.x >= xbord){modifparamsBulle.x = xbord + 5;}
+                        if (modifparamsBulle.x <= -xbord){modifparamsBulle.x = -xbord -5;}
+                        if (modifparamsBulle.y >= ybord){modifparamsBulle.y = ybord + 5;}
+                        if (modifparamsBulle.y <= -ybord){modifparamsBulle.y = -ybord - 5;}
 
-                        parametersllt.x = ( updatedParameters.x / 10);
-                        parametersllt.y = ( updatedParameters.y / 10) + 610;
 
-                        if (updatedParameters.x <= xdelete + 200 && updatedParameters.x >= xdelete - 200 && updatedParameters.y <= ydelete + 200 && updatedParameters.y >= ydelete - 200) {
 
-                            updatedParameters.x = parametersllt.x;
-                            updatedParameters.y = parametersllt.y;
+                        modifparamsCroix.x = (modifparamsBulle.x / 10);
+                        modifparamsCroix.y = (modifparamsBulle.y / 10) + ycroixfinal;
 
-                            parametersllt.height = 200;
-                            parametersllt.width = 200;
+                        modifparamsCroix.height = 150;
+                        modifparamsCroix.width = 150;
 
-                        }
 
-                        wm.updateViewLayout(ll, updatedParameters);
-                        wm.updateViewLayout(llt, parametersllt);
+
+                            if (modifparamsBulle.x <= xcroixinit + 200 && modifparamsBulle.x >= xcroixinit - 200 && modifparamsBulle.y <= ycroixfinal + 200 && modifparamsBulle.y >= ycroixfinal - 200) {
+
+                            modifparamsBulle.x = modifparamsCroix.x;
+                            modifparamsBulle.y = modifparamsCroix.y;
+
+                            modifparamsCroix.height = 200;
+                            modifparamsCroix.width = 200;
+
+                            }
+
+
+
+                        translation(modifparamsBulle.x, modifparamsBulle.y, 0, Bulle, false);
+
+                        homotecie(modifparamsCroix.height, 0, Croix);
+                        if (finanim == true) {translation(modifparamsCroix.x, modifparamsCroix.y, 200, Croix, false);}
 
 
                     default:
@@ -157,93 +185,95 @@ public class FloatingWindow extends Service {
 
                     case MotionEvent.ACTION_UP:
 
-                        animate(parametersllt.x, xbind, parametersllt.y, ybind, 300, llt, true);
-
                         time2 = System.currentTimeMillis();
-
                         Timer = time2 - time1;
 
-                        updatedParameters.height = 180;
-                        updatedParameters.width = 180;
+
+                        modifparamsBulle.height = 180;
+                        modifparamsBulle.width = 180;
+
+
+                        translation(xcroixinit, ycroixinit, 300, Croix, true);
+
+
 
                         if (Timer < 200) {
 
                             double DistInit;
                             double Vitesse;
 
-                            DistInit = (Math.sqrt((updatedParameters.y - y) * (updatedParameters.y - y) + (updatedParameters.x - x) * (updatedParameters.x - x)));
+                            DistInit = (Math.sqrt((modifparamsBulle.y - Ydepart) * (modifparamsBulle.y - Ydepart) + (modifparamsBulle.x - Xdepart) * (modifparamsBulle.x - Xdepart)));
                             Vitesse = (DistInit / Timer);
+
+
 
                             double a;
                             double b;
 
-                            a = (updatedParameters.y - y) / (updatedParameters.x - x);
-                            b = (y - a * x);
+                            a = (modifparamsBulle.y - Ydepart) / (modifparamsBulle.x - Xdepart);
+                            b = (Ydepart - a * Xdepart);
 
-                            if (y > updatedParameters.y) {x = (int) ((ylimit - b) / a);}
-                            if (y < updatedParameters.y) {
-                                x = (int) ((-ylimit - b) / a);
+
+
+                            if (Ydepart > modifparamsBulle.y) {Xdepart = (int) ((-ybord - b) / a);}
+                            if (Ydepart < modifparamsBulle.y) {Xdepart = (int) ((ybord - b) / a);}
+                            if (Xdepart > modifparamsBulle.x) {Ydepart = (int) (a * xbord + b);}
+                            if (Xdepart < modifparamsBulle.x) {Ydepart = (int) (a * -xbord + b);}
+
+
+
+                            if (Ydepart <= -ybord) {
+                                Ydepart = -ybord;
+                                if (Xdepart >= 0) {
+                                    Xdepart = xbord;}
+                                if (Xdepart <= 0) {
+                                    Xdepart = -xbord;}
                             }
-                            if (x > updatedParameters.x) {
-                                y = (int) (a * x0 + b);
-                            }
-                            if (x < updatedParameters.x) {
-                                y = (int) (a * -x0 + b);
+                            if (Ydepart >= ybord) {
+                                Ydepart = ybord;
+                                if (Xdepart >= 0) {
+                                    Xdepart = xbord;}
+                                if (Xdepart <= 0) {
+                                    Xdepart = -xbord;}
                             }
 
-                            if (y <= ylimit) {
-                                y = ylimit;
-                                if (x >= 0) {
-                                    x = x0;
-                                }
-                                if (x <= 0) {
-                                    x = -x0;
-                                }
-                            }
-                            if (y >= -ylimit) {
-                                y = -ylimit;
-                                if (x >= 0) {
-                                    x = x0;
-                                }
-                                if (x <= 0) {
-                                    x = -x0;
-                                }
-                            }
-                            if (x >= x0) {
-                                x = x0;
-                            }
-                            if (x <= -x0) {
-                                x = -x0;
-                            }
+
+                            if (Xdepart >= xbord) {Xdepart = xbord;}
+                            if (Xdepart <= -xbord) {Xdepart = -xbord;}
+
+
 
                             double DistFinal;
                             double Timanim;
 
-                            DistFinal = (Math.sqrt((y - updatedParameters.y) * (y - updatedParameters.y) + (x - updatedParameters.x) * (x - updatedParameters.x)));
+                            DistFinal = (Math.sqrt((Ydepart - modifparamsBulle.y) * (Ydepart - modifparamsBulle.y) + (Xdepart - modifparamsBulle.x) * (Xdepart - modifparamsBulle.x)));
                             Timanim = ((DistFinal / Vitesse) / 4 + 20);
 
-                            animate(updatedParameters.x, (int) x, updatedParameters.y, (int) y, (int) Timanim, ll, false);
+
+
+                            translation((int) Xdepart, (int) Ydepart, (int) Timanim, Bulle, false);
 
                         } else {
 
-                            if (updatedParameters.x == parametersllt.x && updatedParameters.y == parametersllt.y) {
+                            if (modifparamsBulle.x == modifparamsCroix.x && modifparamsBulle.y == modifparamsCroix.y) {
 
-                                wm.removeView(ll);
                                 stopSelf();
                                 System.exit(0);
                             }
 
-                            if (updatedParameters.x != x0 && updatedParameters.x >= 0) {
-                                animate(updatedParameters.x, x0, updatedParameters.y, updatedParameters.y, 200, ll, false);
-                            }
-                            if (updatedParameters.x != -x0 && updatedParameters.x < 0) {
-                                animate(updatedParameters.x, -x0, updatedParameters.y, updatedParameters.y, 200, ll, false);
-                            }
 
-                            updatedParameters.height = 180;
-                            updatedParameters.width = 180;
 
-                            wm.updateViewLayout(ll, updatedParameters);
+                            if (modifparamsBulle.x != xbord && modifparamsBulle.x >= 0) {translation(xbord, modifparamsBulle.y, 200, Bulle, false);}
+                            if (modifparamsBulle.x != -xbord && modifparamsBulle.x < 0) {translation(-xbord, modifparamsBulle.y, 200, Bulle, false);}
+
+
+
+                            modifparamsBulle.height = 180;
+                            modifparamsBulle.width = 180;
+
+
+
+                            translation(modifparamsBulle.x, modifparamsBulle.y, 0, Bulle, false);
 
                         }
 
@@ -258,10 +288,12 @@ public class FloatingWindow extends Service {
     }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public void animate(int startX, int endX, int startY, int endY, int time, final FrameLayout layout, boolean remove) {
+    public void translation(int destinationX, int destinationY, int temps, final FrameLayout layout, final boolean invisibilite) {
 
-        PropertyValuesHolder pvhX = PropertyValuesHolder.ofInt("x", startX, endX);
-        PropertyValuesHolder pvhY = PropertyValuesHolder.ofInt("y", startY, endY);
+        WindowManager.LayoutParams layoutParams = (WindowManager.LayoutParams) layout.getLayoutParams();
+
+        PropertyValuesHolder pvhX = PropertyValuesHolder.ofInt("x", layoutParams.x, destinationX);
+        PropertyValuesHolder pvhY = PropertyValuesHolder.ofInt("y", layoutParams.y, destinationY);
 
         ValueAnimator translator = ValueAnimator.ofPropertyValuesHolder(pvhX, pvhY);
 
@@ -275,28 +307,47 @@ public class FloatingWindow extends Service {
             }
         });
 
-        translator.setDuration(time);
-        if (remove == true) {
-            translator.addListener(new Animator.AnimatorListener() {
-                @Override
-                public void onAnimationStart(Animator animator) {
-                }
-
-                @Override
-                public void onAnimationEnd(Animator animator) {
+        translator.setDuration(temps);
+        translator.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animator) {}
+            @Override
+            public void onAnimationEnd(Animator animator) {
+                if (invisibilite == true) {
                     layout.setVisibility(View.INVISIBLE);
-                }
-
-                @Override
-                public void onAnimationCancel(Animator animator) {
-                }
-
-                @Override
-                public void onAnimationRepeat(Animator animator) {
-                }
-            });
-        }
+                    finanim = false;
+                } else {
+                    finanim = true;}
+            }
+            @Override
+            public void onAnimationCancel (Animator animator){}
+            @Override
+            public void onAnimationRepeat (Animator animator){}
+        });
         translator.start();
+    }
+
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+    public void homotecie(int taillefinal, int temps, final FrameLayout layout) {
+
+        LayoutParams layoutParams = (LayoutParams) layout.getLayoutParams();
+
+        PropertyValuesHolder pvhX = PropertyValuesHolder.ofInt("taille", layoutParams.width, taillefinal);
+
+        ValueAnimator homotetor = ValueAnimator.ofPropertyValuesHolder(pvhX);
+
+        homotetor.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                LayoutParams layoutParams = (LayoutParams) layout.getLayoutParams();
+                layoutParams.width = (Integer) valueAnimator.getAnimatedValue("taille");
+                layoutParams.height = (Integer) valueAnimator.getAnimatedValue("taille");
+                wm.updateViewLayout(layout, layoutParams);
+            }
+        });
+
+        homotetor.setDuration(temps);
+        homotetor.start();
     }
 
 }
